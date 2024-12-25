@@ -3,31 +3,33 @@
 #include "ConUtils.hpp"
 
 class CursorVisibilityGuard {
-public:
-    CursorVisibilityGuard() {
-        ConUtils::setCursorVis(false);
-        ConUtils::setRawMode(true);
-        std::signal(SIGINT, signalHandler);
-        std::signal(SIGTERM, signalHandler);
-    }
+    // Class that resets the terminal to default state on exit
 
-    ~CursorVisibilityGuard() {
-        ConUtils::setCursorVis(true);
-        ConUtils::setRawMode(false);
-    }
+    public:
+        CursorVisibilityGuard() {
+            ConUtils::setCursorVis(false);
+            ConUtils::setRawMode(true);
+            std::signal(SIGINT, signalHandler);
+            std::signal(SIGTERM, signalHandler);
+        }
 
-    static void signalHandler(int signal) {
-        ConUtils::setCursorVis(true);
-        ConUtils::setRawMode(false);
-        std::exit(signal);
-    }
+        ~CursorVisibilityGuard() {
+            ConUtils::setCursorVis(true);
+            ConUtils::setRawMode(false);
+        }
+
+        static void signalHandler(int signal) {
+            ConUtils::setCursorVis(true);
+            ConUtils::setRawMode(false);
+            std::exit(signal);
+        }
 };
 
 namespace CommonMessager {
     using namespace ConUtils;
 
     void run(std::queue<std::string> (*getMessages)(), void (*sendMessage)(const std::string), std::string username) {
-        CursorVisibilityGuard cursorGuard; // Ensures cursor visibility is reset on exit
+        CursorVisibilityGuard cursorGuard; // Ensures term is reset on exit
 
         WindowSize windowSize = getConsoleDimensions();
         clearConsole();
